@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <title>mil-map</title>
+    <title>World Stats Map</title>
 
     <meta property="og:description" content="MilMap" />
     <meta charset='utf-8'>
@@ -12,25 +12,10 @@
     <style>
         body { margin: 0; padding: 0; }
         html, body, #map { height: 100%; }
-
-        #features {
-            position: absolute;
-            top: 0;
-            right: 0;
-            bottom: 0;
-            width: 50%;
-            overflow: auto;
-            background: rgba(255, 255, 255, 0.8);
-        }
-
-        #map canvas {
-            cursor: crosshair;
-        }
     </style>
 </head>
 <body>
     <div id="map"></div>
-    <pre id="features"></pre>
 
     <script src="config.js"></script>
     <script src="main.js"></script>

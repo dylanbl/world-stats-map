@@ -1,5 +1,6 @@
 {
   "dependencies": {
-    "config": "^3.3.9"
+    "config": "^3.3.9",
+    "maplibre-gl": "^3.6.2"
   }
 }

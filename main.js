@@ -1,78 +1,64 @@
-const arcgisMapId = '1c365daf37a744fbad748b67aa69dac8'; 
-const arcgisApiKey = config.ARCGIS_API_KEY;
-
 const map = new maplibregl.Map({
-  container: "map",
-  style: `https://basemaps-api.arcgis.com/arcgis/rest/services/styles/${arcgisMapId}?type=style&token=${arcgisApiKey}`,
-  zoom: 2,
-  center: [-118.805, 34.027]
+    container: 'map', // container id
+    style: 'https://api.maptiler.com/maps/db95ca3f-d9f6-44e4-965f-7af966072ced/style.json?key=j43i7jjwrjixFedR7wZg', // style URL
+    center: [0, 0], // starting position [lng, lat]
+    zoom: 1.5, // starting zoom
+    minZoom: 1.5
 });
 
+let hoverCountryId = null; 
+
 map.on('load', () => {
-    // Add a source for the state polygons.
-    map.addSource('countryBorders', {
+    map.addSource('countries', {
         'type': 'geojson',
-        'data': 'https://dylanbl.github.io/api/geojson/countryBorders.geojson'
+        'data': 'https://dylanbl.github.io/api/geojson/countryBorders.geojson',
+        'generateId': true
     });
 
     map.addLayer({
-        'id': 'countriesLayer',
+        'id': 'country-fills',
         'type': 'fill',
-        'source': 'countryBorders',
+        'source': 'countries',
+        'layout': {}, 
         'paint': {
-            'fill-color': 'rgba(0, 0, 0, 0)',
-            'fill-outline-color': 'rgba(0, 0, 0, 0.75)'
+            'fill-color': '#949494',
+            'fill-opacity': [
+                'case',
+                ['boolean', ['feature-state', 'hover'], false],
+                0.5,
+                0
+            ]
         }
     });
 
-    // When a click event occurs on a feature in the states layer, open a popup at the
-    // location of the click, with description HTML from its properties.
-    map.on('click', 'countriesLayer', (e) => {
-        new maplibregl.Popup()
-            .setLngLat(e.lngLat)
-            .setHTML(e.features[0].properties.ADMIN)
-            .addTo(map);
-    });
-
-    // Change the cursor to a pointer when the mouse is over the states layer.
-    map.on('mouseenter', 'countriesLayer', () => {
+    map.on('mousemove', 'country-fills', (e) => {
         map.getCanvas().style.cursor = 'pointer';
+
+        if (e.features.length > 0) {
+            if (hoverCountryId !== null) {
+                map.setFeatureState(
+                    {source: 'countries', id: hoverCountryId},
+                    {hover: false}
+                );
+            }
+
+            hoverCountryId = e.features[0].id;
+            
+            map.setFeatureState(
+                {source: 'countries', id: hoverCountryId},
+                {hover: true}
+            ); 
+        }
     });
 
-    // Change it back to a pointer when it leaves.
-    map.on('mouseleave', 'countriesLayer', () => {
-        map.getCanvas().style.cursor = '';
+    map.on('mouseleave', 'country-fills', () => {
+        if (hoverCountryId) {
+            map.setFeatureState(
+                {source: 'countries', id: hoverCountryId},
+                {hover: false}
+            );
+        }
+
+        hoverCountryId = null;
     });
 });
-
-/*
-map.on('mousemove', (e) => {
-    const features = map.queryRenderedFeatures(e.point);
-
-    // Limit the number of properties we're displaying for
-    // legibility and performance
-    const displayProperties = [
-        'type',
-        'properties',
-        'id',
-        'layer',
-        'source',
-        'sourceLayer',
-        'state'
-    ];
-
-    const displayFeatures = features.map((feat) => {
-        const displayFeat = {};
-        displayProperties.forEach((prop) => {
-            displayFeat[prop] = feat[prop];
-        });
-        return displayFeat;
-    });
-
-    document.getElementById('features').innerHTML = JSON.stringify(
-        displayFeatures,
-        null,
-        2
-    );
-});
-*/
